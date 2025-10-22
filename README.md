@@ -16,7 +16,7 @@ Simplified Kubernetes cluster management with Talos Linux and Flux CD.
 
 ### Bootstrap a New Cluster
 
-1. **Configure your cluster** in `kubernetes/main/bootstrap/talos/talconfig.yaml`
+1. **Configure your cluster** in `kubernetes/fsn1/bootstrap/talos/talconfig.yaml`
 
 2. **Store secrets in 1Password**:
    ```bash
