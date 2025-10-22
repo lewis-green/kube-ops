@@ -9,7 +9,7 @@ spec:
   issuerRef:
     name: letsencrypt-production
     kind: ClusterIssuer
-  commonName: "stanleygrange-uk"
+  commonName: "stanleygrange.uk"
   dnsNames:
     - "stanleygrange.uk"
     - "*.stanleygrange.uk"
