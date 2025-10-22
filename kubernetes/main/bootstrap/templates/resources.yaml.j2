@@ -14,9 +14,8 @@ kind: Secret
 metadata:
   name: sops-age
   namespace: flux-system
-stringData:
-  age.agekey: |
-    {{ ENV.FLUX_SOPS_PRIVATE_KEY | indent(4) }}
+data:
+  age.agekey: {{ ENV.FLUX_SOPS_PRIVATE_KEY }}
 ---
 apiVersion: v1
 data:
