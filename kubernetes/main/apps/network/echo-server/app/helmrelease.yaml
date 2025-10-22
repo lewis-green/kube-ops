@@ -47,7 +47,7 @@ spec:
     route:
       app:
         hostnames:
-          - echo-server.fsn1.stanleygrange.uk
+          - echo-server-fsn1.stanleygrange.uk
         parentRefs:
           - name: envoy-external
             namespace: network

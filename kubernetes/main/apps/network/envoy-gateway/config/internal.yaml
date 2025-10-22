@@ -4,7 +4,7 @@ kind: Gateway
 metadata:
   name: envoy-internal
   annotations:
-    external-dns.alpha.kubernetes.io/target: &hostname ingress-int.fsn1.stanleygrange.uk.
+    external-dns.alpha.kubernetes.io/target: &hostname ingress-int-fsn1.stanleygrange.uk.
 spec:
   gatewayClassName: envoy
   infrastructure:

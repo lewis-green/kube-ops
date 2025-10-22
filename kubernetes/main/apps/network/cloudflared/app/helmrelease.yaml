@@ -18,7 +18,7 @@ spec:
               - hostname: "*.stanleygrange.uk"
                 originRequest:
                   http2Origin: true
-                  originServerName: ingress-ext.fsn1.stanleygrange.uk
+                  originServerName: ingress-ext-fsn1.stanleygrange.uk
                 service: https://envoy-external.{{ .Release.Namespace }}.svc.cluster.local:443
               - service: http_status:404
     controllers:
