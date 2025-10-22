@@ -14,7 +14,7 @@ instance:
     - image-automation-controller
   sync:
     kind: GitRepository
-    url: ssh://git@github.com:lewis-green/kube-ops
+    url: ssh://git@github.com/lewis-green/kube-ops
     ref: refs/heads/main
     path: kubernetes/main/flux/cluster
     interval: 1h
