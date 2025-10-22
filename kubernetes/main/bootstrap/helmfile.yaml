@@ -26,7 +26,7 @@ releases:
     chart: cilium/cilium
     version: 1.18.2
     values:
-      - ../../apps/kube-system/cilium/app/values.yaml
+      - ../apps/kube-system/cilium/app/values.yaml
     needs:
       - monitoring/prometheus-operator-crds
 
@@ -35,7 +35,7 @@ releases:
     chart: postfinance/kubelet-csr-approver
     version: 1.2.11
     values:
-      - ../../apps/system-controllers/kubelet-csr-approver/app/values.yaml
+      - ../apps/system-controllers/kubelet-csr-approver/app/values.yaml
     needs:
       - kube-system/cilium
       - monitoring/prometheus-operator-crds
@@ -43,11 +43,11 @@ releases:
   - name: coredns
     namespace: kube-system
     chart: oci://ghcr.io/coredns/charts/coredns
-    version: 1.43.3
+    version: 1.45.0
     values:
       - ../apps/kube-system/coredns/app/values.yaml
     needs:
-      - kube-system/kubelet-csr-approver
+      - system-controllers/kubelet-csr-approver
 
   - name: cert-manager
     namespace: cert-manager
