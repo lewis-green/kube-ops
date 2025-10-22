@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: external-secrets
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: flux-system
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sops-age
+  namespace: flux-system
+stringData:
+  age.agekey: |
+    {{ ENV.FLUX_SOPS_PRIVATE_KEY | indent(4) }}
+---
+apiVersion: v1
+data:
+    identity: {{ ENV.GH_IDENTITY }}
+    identity.pub: {{ ENV.GH_IDENTITY_PUB }}
+    known_hosts: {{ ENV.GH_KNOWN_HOSTS }}
+kind: Secret
+metadata:
+    name: github-ssh-key
+    namespace: flux-system
+type: Opaque

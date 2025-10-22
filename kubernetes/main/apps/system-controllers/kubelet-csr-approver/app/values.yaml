@@ -1,0 +1,12 @@
+---
+providerRegex: |
+  ^k8s-(1|2|3)$
+bypassDnsResolution: true
+
+tolerations:
+  - effect: NoSchedule
+    key: node.cloudprovider.kubernetes.io/uninitialized
+    operator: Exists
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/control-plane
+    operator: Equal

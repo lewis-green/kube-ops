@@ -1,0 +1,25 @@
+---
+version: "3"
+
+vars:
+  KUBERNETES_DIR: "{{.ROOT_DIR}}/kubernetes"
+
+includes:
+  flux:
+    dir: .taskfiles/flux
+    taskfile: .taskfiles/flux
+  k8s:
+    taskfile: .taskfiles/k8s
+    dir: .taskfiles/k8s
+  sops:
+    taskfile: ".taskfiles/sops"
+    dir: .taskfiles/sops
+  talos:
+    taskfile: ".taskfiles/talos"
+    dir: .taskfiles/talos
+
+tasks:
+  default:
+    silent: true
+    cmds:
+      - task -l
