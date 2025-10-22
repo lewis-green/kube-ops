@@ -7,10 +7,6 @@ resources:
   - ./externalsecret.yaml
   - ./ocirepository.yaml
   - ./helmrelease.yaml
-configMapGenerator:
-  - name: cloudflared-configmap
-    files:
-      - config/config.yaml
 generatorOptions:
   disableNameSuffixHash: true
   annotations:
