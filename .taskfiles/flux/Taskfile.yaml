@@ -1,0 +1,98 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: "3"
+
+tasks:
+  bootstrap:
+    desc: Bootstrap Flux into the cluster (installs Flux, applies secrets, starts GitOps)
+    summary: |
+      Args:
+        cluster: Cluster name (default: main)
+    vars:
+      cluster: '{{.cluster | default "main"}}'
+    env:
+      KUBECONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig'
+    cmds:
+      - echo "Installing Flux..."
+      - kubectl --context {{.cluster}} apply --server-side --kustomize {{.KUBERNETES_DIR}}/{{.cluster}}/bootstrap/flux
+      - echo "Applying secrets from 1Password..."
+      - task: _apply-secrets
+        vars: {cluster: "{{.cluster}}"}
+      - echo "Applying cluster settings..."
+      - kubectl --context {{.cluster}} apply -f {{.KUBERNETES_DIR}}/{{.cluster}}/flux/vars/cluster-settings.yaml
+      - echo "Starting Flux Kustomizations..."
+      - kubectl --context {{.cluster}} apply --server-side --kustomize {{.KUBERNETES_DIR}}/{{.cluster}}/flux/config
+      - echo "Flux bootstrap complete!"
+    preconditions:
+      - sh: kubectl config get-contexts {{.cluster}}
+        msg: "Kubectl context {{.cluster}} not found"
+      - which op
+      - test -f {{.KUBERNETES_DIR}}/{{.cluster}}/flux/vars/cluster-settings.yaml
+
+  reconcile:
+    desc: Force reconcile all Flux resources
+    vars:
+      cluster: '{{.cluster | default "main"}}'
+    env:
+      KUBECONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig'
+    cmds:
+      - flux --context {{.cluster}} reconcile source git flux-system
+      - flux --context {{.cluster}} reconcile kustomization --all
+
+  sync:
+    desc: Sync a specific app or all apps
+    summary: |
+      Args:
+        cluster: Cluster name (default: main)
+        app: App name (optional - if not provided, syncs all)
+    vars:
+      cluster: '{{.cluster | default "main"}}'
+    env:
+      KUBECONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig'
+    cmds:
+      - |
+        if [ -n "{{.app}}" ]; then
+          flux --context {{.cluster}} reconcile kustomization {{.app}} --with-source
+        else
+          flux --context {{.cluster}} reconcile kustomization --all
+        fi
+
+  status:
+    desc: Show Flux status
+    vars:
+      cluster: '{{.cluster | default "main"}}'
+    env:
+      KUBECONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig'
+    cmds:
+      - flux --context {{.cluster}} get all
+
+  logs:
+    desc: Show Flux logs
+    vars:
+      cluster: '{{.cluster | default "main"}}'
+    env:
+      KUBECONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig'
+    cmds:
+      - flux --context {{.cluster}} logs --all-namespaces --follow
+
+  # Internal tasks
+  _apply-secrets:
+    internal: true
+    env:
+      KUBECONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig'
+    cmds:
+      - |
+        # Apply age key for SOPS
+        op read "op://Homelab/{{.cluster}}-age-key/private-key" | \
+        kubectl --context {{.cluster}} create secret generic sops-age \
+          --namespace=flux-system \
+          --from-file=age.agekey=/dev/stdin \
+          --dry-run=client -o yaml | kubectl apply -f -
+      - |
+        # Apply GitHub deploy key
+        op read "op://Homelab/{{.cluster}}-github-deploy-key/private-key" | \
+        kubectl --context {{.cluster}} create secret generic flux-system \
+          --namespace=flux-system \
+          --from-file=identity=/dev/stdin \
+          --from-literal=known_hosts="$(ssh-keyscan github.com)" \
+          --dry-run=client -o yaml | kubectl apply -f -

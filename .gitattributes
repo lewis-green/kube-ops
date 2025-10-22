@@ -1,0 +1,2 @@
+*.sops.* diff=sopsdiffer
+*.yaml.j2 linguist-language=YAML

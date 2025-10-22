@@ -1,0 +1,81 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: "3"
+
+tasks:
+  shell:
+    desc: Quick kubectl shell access
+    vars:
+      cluster: '{{.cluster | default "main"}}'
+    env:
+      KUBECONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig'
+    cmds:
+      - kubectl --context {{.cluster}} {{.CLI_ARGS}}
+
+  nodes:
+    desc: List all nodes
+    vars:
+      cluster: '{{.cluster | default "main"}}'
+    env:
+      KUBECONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig'
+    cmds:
+      - kubectl --context {{.cluster}} get nodes -o wide
+
+  pods:
+    desc: List pods (optionally filter by namespace)
+    vars:
+      cluster: '{{.cluster | default "main"}}'
+      ns: '{{.ns | default ""}}'
+    env:
+      KUBECONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig'
+    cmds:
+      - |
+        if [ -n "{{.ns}}" ]; then
+          kubectl --context {{.cluster}} get pods -n {{.ns}} -o wide
+        else
+          kubectl --context {{.cluster}} get pods -A -o wide
+        fi
+
+  logs:
+    desc: Get pod logs
+    summary: |
+      Args:
+        pod: Pod name (required)
+        ns: Namespace (default: default)
+    vars:
+      cluster: '{{.cluster | default "main"}}'
+      ns: '{{.ns | default "default"}}'
+    env:
+      KUBECONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig'
+    cmds:
+      - kubectl --context {{.cluster}} logs -n {{.ns}} {{.pod}} {{.CLI_ARGS}}
+    requires:
+      vars: [pod]
+
+  exec:
+    desc: Execute command in pod
+    summary: |
+      Args:
+        pod: Pod name (required)
+        ns: Namespace (default: default)
+        cmd: Command to run (default: /bin/sh)
+    vars:
+      cluster: '{{.cluster | default "main"}}'
+      ns: '{{.ns | default "default"}}'
+      cmd: '{{.cmd | default "/bin/sh"}}'
+    env:
+      KUBECONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig'
+    cmds:
+      - kubectl --context {{.cluster}} exec -it -n {{.ns}} {{.pod}} -- {{.cmd}}
+    requires:
+      vars: [pod]
+
+  delete-failed:
+    desc: Delete all failed/evicted pods
+    vars:
+      cluster: '{{.cluster | default "main"}}'
+    env:
+      KUBECONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig'
+    cmds:
+      - kubectl --context {{.cluster}} get pods -A --field-selector=status.phase=Failed -o json | kubectl delete -f -
+      - kubectl --context {{.cluster}} get pods -A --field-selector=status.phase=Evicted -o json | kubectl delete -f -

@@ -1,0 +1,185 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: "3"
+
+tasks:
+  genconfig:
+    desc: Generate Talos cluster configuration using talhelper
+    summary: |
+      Args:
+        cluster: Cluster name (default: main)
+    vars:
+      cluster: '{{.cluster | default "main"}}'
+    cmds:
+      - echo "Generating Talos configuration for cluster '{{.cluster}}'..."
+      - op run --env-file {{.KUBERNETES_DIR}}/{{.cluster}}/talos/talhelper-secrets.env --no-masking -- talhelper genconfig
+        --secret-file {{.KUBERNETES_DIR}}/{{.cluster}}/talos/talsecret.yaml
+        --config-file {{.KUBERNETES_DIR}}/{{.cluster}}/talos/talconfig.yaml
+        --out-dir {{.KUBERNETES_DIR}}/{{.cluster}}/talos/clusterconfig
+      - echo "Configuration generated in {{.KUBERNETES_DIR}}/{{.cluster}}/bootstrap/talos/clusterconfig"
+    requires:
+      vars: [cluster]
+    preconditions:
+      - which op test talhelper
+      - test -f {{.KUBERNETES_DIR}}/{{.cluster}}/talos/talsecret.yaml
+      - test -f {{.KUBERNETES_DIR}}/{{.cluster}}/talos/talconfig.yaml
+      - test -f {{.KUBERNETES_DIR}}/{{.cluster}}/talos/talhelper-secrets.env
+
+  bootstrap:
+    desc: Bootstrap a new Talos cluster (generates config, applies it, bootstraps etcd, fetches kubeconfig)
+    summary: |
+      Args:
+        cluster: Cluster name (default: main)
+        controller: Controller node IP (required)
+    vars:
+      cluster: '{{.cluster | default "main"}}'
+    prompt: Bootstrap Talos cluster '{{.cluster}}'... continue?
+    cmds:
+      - task: genconfig
+        vars: {cluster: "{{.cluster}}"}
+      - echo "Applying cluster configuration to all nodes..."
+      - task: _apply-all-configs
+        vars: {cluster: "{{.cluster}}"}
+      - echo "Bootstrapping etcd on controller..."
+      - until talosctl --context {{.cluster}} --nodes {{.controller}} bootstrap; do sleep 10; done
+      - echo "Fetching kubeconfig..."
+      - task: _fetch-kubeconfig
+        vars: {cluster: "{{.cluster}}", controller: "{{.controller}}"}
+      - echo "Bootstrap complete! Kubeconfig saved to {{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig"
+    env:
+      TALOSCONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/bootstrap/talos/clusterconfig/talosconfig'
+    requires:
+      vars: [cluster, controller]
+    preconditions:
+      - which talosctl
+      - which talhelper
+      - test -f {{.KUBERNETES_DIR}}/{{.cluster}}/bootstrap/talos/talconfig.yaml
+
+  upgrade:
+    desc: Upgrade Talos OS and/or Kubernetes version
+    summary: |
+      Args:
+        cluster: Cluster name (default: main)
+        what: What to upgrade - 'talos', 'k8s', or 'both' (default: both)
+    vars:
+      cluster: '{{.cluster | default "main"}}'
+      what: '{{.what | default "both"}}'
+    cmds:
+      - task: _upgrade-talos
+        vars: {cluster: "{{.cluster}}"}
+      - task: _upgrade-k8s
+        vars: {cluster: "{{.cluster}}"}
+    env:
+      TALOSCONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/bootstrap/talos/clusterconfig/talosconfig'
+      KUBECONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig'
+    requires:
+      vars: [cluster]
+
+  bootstrap-integrations:
+    desc: Bootstrap core integrations needed for Talos
+    summary: |
+      Args:
+        cluster: Cluster name (default: main)
+
+      This task installs essential cluster integrations using helmfile:
+      - Prometheus Operator CRDs (for monitoring)
+      - Cilium (CNI networking)
+      - Kubelet CSR Approver (automatic certificate signing)
+
+      The task waits for nodes to be NotReady, applies the helmfile, then waits for nodes to become Ready.
+    vars:
+      cluster: '{{.cluster | default "main"}}'
+    env:
+      TALOSCONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/bootstrap/talos/clusterconfig/talosconfig'
+      KUBECONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig'
+    cmds:
+      - until kubectl --context {{.cluster}} wait --for=condition=Ready=False nodes --all --timeout=600s; do sleep 10; done
+      - helmfile --kube-context {{.cluster}} --file {{.KUBERNETES_DIR}}/{{.cluster}}/bootstrap/integrations/helmfile.yaml apply --skip-diff-on-install --suppress-diff
+      - until kubectl --context {{.cluster}} wait --for=condition=Ready nodes --all --timeout=600s; do sleep 10; done
+    requires:
+      vars:
+        - cluster
+    preconditions:
+      - which helmfile
+      - test -f {{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig
+      - sh: kubectl config get-contexts {{.cluster}}
+        msg: "Kubectl context {{.cluster}} not found"
+      - test -f {{.KUBERNETES_DIR}}/{{.cluster}}/bootstrap/integrations/helmfile.yaml
+
+  dashboard:
+    desc: Open Talos dashboard
+    vars:
+      cluster: '{{.cluster | default "main"}}'
+    cmds:
+      - talosctl --context {{.cluster}} dashboard
+    env:
+      TALOSCONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/bootstrap/talos/clusterconfig/talosconfig'
+
+  kubeconfig:
+    desc: Fetch/update kubeconfig from cluster
+    vars:
+      cluster: '{{.cluster | default "main"}}'
+      controller:
+        sh: talosctl --context {{.cluster}} config info | grep Endpoints | awk '{print $2}' | cut -d',' -f1
+    cmds:
+      - task: _fetch-kubeconfig
+        vars: {cluster: "{{.cluster}}", controller: "{{.controller}}"}
+    env:
+      TALOSCONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/bootstrap/talos/clusterconfig/talosconfig'
+
+  # Internal tasks
+  _apply-all-configs:
+    internal: true
+    env:
+      TALOSCONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/bootstrap/talos/clusterconfig/talosconfig'
+    vars:
+      CONFIGS:
+        sh: find {{.KUBERNETES_DIR}}/{{.cluster}}/bootstrap/talos/clusterconfig -name '*.yaml' -not -name 'talosconfig' -exec basename {} \;
+    cmds:
+      - for:
+          var: CONFIGS
+        cmd: |
+          hostname={{ trimPrefix (printf "%s-" .cluster) .ITEM | trimSuffix ".yaml" }}
+          talosctl --context {{.cluster}} apply-config \
+            --nodes "$hostname" \
+            --file "{{.KUBERNETES_DIR}}/{{.cluster}}/bootstrap/talos/clusterconfig/{{.ITEM}}" \
+            --insecure
+
+  _fetch-kubeconfig:
+    internal: true
+    env:
+      TALOSCONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/bootstrap/talos/clusterconfig/talosconfig'
+    cmds:
+      - talosctl --context {{.cluster}} kubeconfig --nodes {{.controller}}
+        --force --force-context-name {{.cluster}} {{.KUBERNETES_DIR}}/{{.cluster}}
+      - yq e '.contexts[0].name = "{{.cluster}}"' -i {{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig
+      - yq e '.current-context = "{{.cluster}}"' -i {{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig
+
+  _upgrade-talos:
+    internal: true
+    env:
+      TALOSCONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/bootstrap/talos/clusterconfig/talosconfig'
+    vars:
+      NODES:
+        sh: kubectl --context {{.cluster}} get nodes -o jsonpath='{.items[*].metadata.name}'
+      TALOS_VERSION:
+        sh: yq -r ".talosVersion" {{.KUBERNETES_DIR}}/{{.cluster}}/bootstrap/talos/talconfig.yaml
+    cmds:
+      - for: {var: NODES}
+        cmd: |
+          echo "Upgrading Talos on {{.ITEM}} to {{.TALOS_VERSION}}..."
+          talosctl --context {{.cluster}} upgrade -n {{.ITEM}} --image ghcr.io/siderolabs/installer:{{.TALOS_VERSION}}
+          sleep 60
+
+  _upgrade-k8s:
+    internal: true
+    env:
+      TALOSCONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/bootstrap/talos/clusterconfig/talosconfig'
+    vars:
+      K8S_VERSION:
+        sh: yq -r ".kubernetesVersion" {{.KUBERNETES_DIR}}/{{.cluster}}/bootstrap/talos/talconfig.yaml
+      CONTROLLER:
+        sh: talosctl --context {{.cluster}} config info | grep Endpoints | awk '{print $2}' | cut -d',' -f1
+    cmds:
+      - echo "Upgrading Kubernetes to {{.K8S_VERSION}}..."
+      - talosctl --context {{.cluster}} upgrade-k8s -n {{.CONTROLLER}} --to {{.K8S_VERSION}}

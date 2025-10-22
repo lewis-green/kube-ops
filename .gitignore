@@ -1,0 +1,30 @@
+# Folders
+ignore/
+logs/
+testing/
+
+# Trash
+.DS_Store
+Thumbs.db
+
+# SOPS
+.decrypted~*
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*tfplan*
+
+# Kubeconfig
+kubeconfig
+
+# Talos clusterconfigs
+kubernetes/**/bootstrap/talos/clusterconfig
+
+# 1Password
+.op/
+
+# IDE
+.vscode/
+.idea/

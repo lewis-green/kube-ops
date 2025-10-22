@@ -1,0 +1,21 @@
+---
+keys:
+  # Replace these with your actual age keys
+  # Get your age key from: op read "op://Homelab/age-key/public-key"
+  - &lewis age14ajewtl3ccmx0vmlmaqhm689e6gkyxc8z0mkqqxyhstxhm9ajaeqwwe6m8
+  - &flux age1ch6cp3g5cru9tjprg3nezg9ugpqjsxc2mmr8xrdhgdzfrxta7gdskhzeax
+creation_rules:
+  # Talos secrets - encrypt entire file
+  - path_regex: kubernetes/.*/bootstrap/talos/.*\.(yaml|yml)$
+    key_groups:
+      - age:
+          - *lewis
+          - *flux
+
+  # Kubernetes secrets - only encrypt data fields
+  - path_regex: kubernetes/.*\.(yaml|yml)$
+    encrypted_regex: "^(data|stringData)$"
+    key_groups:
+      - age:
+          - *lewis
+          - *flux

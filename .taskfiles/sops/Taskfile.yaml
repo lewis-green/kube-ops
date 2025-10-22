@@ -1,0 +1,60 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: "3"
+
+tasks:
+  encrypt:
+    desc: Encrypt a file with SOPS
+    dir: "{{.USER_WORKING_DIR}}"
+    summary: |
+      Args:
+        file: File to encrypt (required)
+    cmds:
+      - sops --encrypt --in-place {{.file}}
+    requires:
+      vars: [file]
+    preconditions:
+      - which sops
+      - test -f {{.file}}
+
+  decrypt:
+    desc: Decrypt a SOPS file
+    dir: "{{.USER_WORKING_DIR}}"
+    summary: |
+      Args:
+        file: File to decrypt (required)
+    cmds:
+      - sops --decrypt {{.file}}
+    requires:
+      vars: [file]
+    preconditions:
+      - which sops
+      - test -f {{.file}}
+
+  edit:
+    desc: Edit an encrypted SOPS file
+    dir: "{{.USER_WORKING_DIR}}"
+    summary: |
+      Args:
+        file: File to edit (required)
+    cmds:
+      - sops {{.file}}
+    requires:
+      vars: [file]
+    preconditions:
+      - which sops
+      - test -f {{.file}}
+
+  rotate:
+    desc: Rotate SOPS keys
+    dir: "{{.USER_WORKING_DIR}}"
+    summary: |
+      Args:
+        file: File to rotate keys for (required)
+    cmds:
+      - sops updatekeys --yes {{.file}}
+    requires:
+      vars: [file]
+    preconditions:
+      - which sops
+      - test -f {{.file}}
