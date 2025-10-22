@@ -49,5 +49,5 @@ spec:
         hostnames:
           - echo-server.fsn1.stanleygrange.uk
         parentRefs:
-          - name: envoy-internal
+          - name: envoy-external
             namespace: network
