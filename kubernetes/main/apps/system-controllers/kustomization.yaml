@@ -5,6 +5,7 @@ kind: Kustomization
 namespace: system-controllers
 resources:
   - ./k8tz/ks.yaml
+  - ./kubelet-csr-approver/ks.yaml
 components:
   - ../../components/namespace
 patches:
