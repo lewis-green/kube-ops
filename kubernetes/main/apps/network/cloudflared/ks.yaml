@@ -12,6 +12,8 @@ spec:
   dependsOn:
     - name: external-secrets
       namespace: external-secrets
+    - name: external-dns-cloudflare
+      namespace: network
   interval: 1h
   path: ./kubernetes/main/apps/network/cloudflared/app
   prune: true
