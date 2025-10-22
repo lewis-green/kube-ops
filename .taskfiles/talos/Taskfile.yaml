@@ -9,7 +9,7 @@ tasks:
       Args:
         cluster: Cluster name (default: main)
     vars:
-      cluster: '{{.cluster | default "main"}}'
+      cluster: '{{.cluster}}'
     cmds:
       - echo "Generating Talos configuration for cluster '{{.cluster}}'..."
       - op run --env-file {{.KUBERNETES_DIR}}/{{.cluster}}/talos/talhelper-secrets.env --no-masking -- talhelper genconfig
@@ -32,7 +32,7 @@ tasks:
         cluster: Cluster name (default: main)
         controller: Controller node IP (required)
     vars:
-      cluster: '{{.cluster | default "main"}}'
+      cluster: '{{.cluster}}'
     prompt: Bootstrap Talos cluster '{{.cluster}}'... continue?
     cmds:
       - task: genconfig
@@ -62,7 +62,7 @@ tasks:
         cluster: Cluster name (default: main)
         what: What to upgrade - 'talos', 'k8s', or 'both' (default: both)
     vars:
-      cluster: '{{.cluster | default "main"}}'
+      cluster: '{{.cluster}}'
       what: '{{.what | default "both"}}'
     cmds:
       - task: _upgrade-talos
@@ -88,7 +88,7 @@ tasks:
 
       The task waits for nodes to be NotReady, applies the helmfile, then waits for nodes to become Ready.
     vars:
-      cluster: '{{.cluster | default "main"}}'
+      cluster: '{{.cluster}}'
     env:
       TALOSCONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/talos/clusterconfig/talosconfig'
       KUBECONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig'
@@ -115,7 +115,7 @@ tasks:
   dashboard:
     desc: Open Talos dashboard
     vars:
-      cluster: '{{.cluster | default "main"}}'
+      cluster: '{{.cluster}}'
     cmds:
       - talosctl --context {{.cluster}} dashboard
     env:
@@ -124,7 +124,7 @@ tasks:
   kubeconfig:
     desc: Fetch/update kubeconfig from cluster
     vars:
-      cluster: '{{.cluster | default "main"}}'
+      cluster: '{{.cluster}}'
       controller:
         sh: talosctl --context {{.cluster}} config info | grep Endpoints | awk '{print $2}' | cut -d',' -f1
     cmds:
