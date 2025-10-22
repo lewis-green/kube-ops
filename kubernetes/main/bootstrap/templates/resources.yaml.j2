@@ -27,3 +27,13 @@ metadata:
     name: github-ssh-key
     namespace: flux-system
 type: Opaque
+---
+apiVersion: v1
+data:
+    token: {{ ENV.OP_TOKEN }}
+    1password-credentials.json: {{ ENV.OP_CREDENTIALS_JSON }}
+kind: Secret
+metadata:
+    name: onepassword-connect-secret
+    namespace: external-secrets
+type: Opaque
