@@ -67,8 +67,8 @@ tasks:
     cmds:
       - task: _upgrade-talos
         vars: {cluster: "{{.cluster}}"}
-      - task: _upgrade-k8s
-        vars: {cluster: "{{.cluster}}"}
+      # - task: _upgrade-k8s
+      #   vars: {cluster: "{{.cluster}}"}
     env:
       TALOSCONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/talos/clusterconfig/talosconfig'
       KUBECONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig'
@@ -133,6 +133,35 @@ tasks:
     env:
       TALOSCONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/talos/clusterconfig/talosconfig'
 
+  apply:
+    desc: Apply updated Talos configuration to all nodes (secure mode)
+    summary: |
+      Args:
+        cluster: Cluster name (default: main)
+
+      This task regenerates the cluster configuration from talconfig.yaml
+      and applies it to all running nodes using secure mode (requires existing trust).
+    vars:
+      cluster: '{{.cluster}}'
+    prompt: Apply configuration changes to cluster '{{.cluster}}'... continue?
+    cmds:
+      - echo "Generating updated Talos configuration..."
+      - task: genconfig
+        vars: {cluster: "{{.cluster}}"}
+      - echo "Applying configuration to all nodes (secure mode)..."
+      - task: _apply-all-configs-secure
+        vars: {cluster: "{{.cluster}}"}
+      - echo "Configuration applied successfully!"
+    env:
+      TALOSCONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/talos/clusterconfig/talosconfig'
+    requires:
+      vars: [cluster]
+    preconditions:
+      - which talosctl talhelper
+      - test -f {{.KUBERNETES_DIR}}/{{.cluster}}/talos/talconfig.yaml
+      - sh: talosctl --context {{.cluster}} config info
+        msg: "Talosconfig not found or invalid for cluster {{.cluster}}"
+
   # Internal tasks
   _apply-all-configs:
     internal: true
@@ -151,6 +180,23 @@ tasks:
             --file "{{.KUBERNETES_DIR}}/{{.cluster}}/talos/clusterconfig/{{.ITEM}}" \
             --insecure
 
+  _apply-all-configs-secure:
+    internal: true
+    env:
+      TALOSCONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/talos/clusterconfig/talosconfig'
+    vars:
+      CONFIGS:
+        sh: find {{.KUBERNETES_DIR}}/{{.cluster}}/talos/clusterconfig -name '*.yaml' -not -name 'talosconfig' -exec basename {} \;
+    cmds:
+      - for:
+          var: CONFIGS
+        cmd: |
+          hostname={{ trimPrefix (printf "%s-" .cluster) .ITEM | trimSuffix ".yaml" }}
+          echo "Applying config to node: $hostname"
+          talosctl --context {{.cluster}} apply-config \
+            --nodes "$hostname" \
+            --file "{{.KUBERNETES_DIR}}/{{.cluster}}/talos/clusterconfig/{{.ITEM}}"
+
   _fetch-kubeconfig:
     internal: true
     env:
@@ -165,22 +211,27 @@ tasks:
     internal: true
     env:
       TALOSCONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/talos/clusterconfig/talosconfig'
+      KUBECONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig'
     vars:
-      NODES:
-        sh: kubectl --context {{.cluster}} get nodes -o jsonpath='{.items[*].metadata.name}'
+      CONFIGS:
+        sh: find {{.KUBERNETES_DIR}}/{{.cluster}}/talos/clusterconfig -name '*.yaml' -not -name 'talosconfig' -exec basename {} \;
       TALOS_VERSION:
         sh: yq -r ".talosVersion" {{.KUBERNETES_DIR}}/{{.cluster}}/talos/talconfig.yaml
     cmds:
-      - for: {var: NODES}
+      - for:
+          var: CONFIGS
         cmd: |
-          echo "Upgrading Talos on {{.ITEM}} to {{.TALOS_VERSION}}..."
-          talosctl --context {{.cluster}} upgrade -n {{.ITEM}} --image ghcr.io/siderolabs/installer:{{.TALOS_VERSION}}
+          hostname={{ trimPrefix (printf "%s-" .cluster) .ITEM | trimSuffix ".yaml" }}
+          image=$(yq -r ".machine.install.image" {{.KUBERNETES_DIR}}/{{.cluster}}/talos/clusterconfig/{{.ITEM}})
+          echo "Upgrading Talos on $hostname to $image..."
+          talosctl upgrade --nodes "$hostname" --image "$image"
           sleep 60
 
   _upgrade-k8s:
     internal: true
     env:
       TALOSCONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/talos/clusterconfig/talosconfig'
+      KUBECONFIG: '{{.KUBERNETES_DIR}}/{{.cluster}}/kubeconfig'
     vars:
       K8S_VERSION:
         sh: yq -r ".kubernetesVersion" {{.KUBERNETES_DIR}}/{{.cluster}}/talos/talconfig.yaml

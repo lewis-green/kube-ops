@@ -144,7 +144,7 @@ controlPlane:
       systemExtensions:
         officialExtensions:
           - siderolabs/intel-ucode
-          - siderolabs/i915
+          - siderolabs/iscsi-tools
 
   patches:
     # Cluster configuration
