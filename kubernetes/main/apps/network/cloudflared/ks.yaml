@@ -11,6 +11,7 @@ spec:
       app.kubernetes.io/name: *appname
   dependsOn:
     - name: external-secrets
+      namespace: external-secrets
   interval: 1h
   path: ./kubernetes/main/apps/network/cloudflared/app
   prune: true
