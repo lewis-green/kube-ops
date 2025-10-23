@@ -88,6 +88,7 @@ spec:
 
       extraArgs:
         publish-status-address: *hostname
+        default-ssl-certificate: "network/stanleygrange-uk-tls"
 
       topologySpreadConstraints:
         - maxSkew: 1

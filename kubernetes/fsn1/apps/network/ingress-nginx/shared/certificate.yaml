@@ -1,0 +1,15 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: "stanleygrange-uk"
+  namespace: network
+spec:
+  secretName: "stanleygrange-uk-tls"
+  issuerRef:
+    name: letsencrypt-cf-dns
+    kind: ClusterIssuer
+  commonName: "stanleygrange.uk"
+  dnsNames:
+    - "stanleygrange.uk"
+    - "*.stanleygrange.uk"
