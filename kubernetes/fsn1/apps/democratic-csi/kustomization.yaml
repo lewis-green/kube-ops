@@ -1,7 +1,8 @@
 ---
 # yaml-language-server: $schema=https://json.schemastore.org/component.json
-apiVersion: kustomize.config.k8s.io/v1alpha1
-kind: Component
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: democratic-csi
 resources:
   - ./namespace.yaml
-  - ./democratic-csi/ks.yaml
+  # - ./democratic-csi/ks.yaml
