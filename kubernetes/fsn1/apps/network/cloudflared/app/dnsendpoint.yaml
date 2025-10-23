@@ -8,3 +8,6 @@ spec:
     - dnsName: ingress-ext-fsn1.stanleygrange.uk
       recordType: CNAME
       targets: ["5c9df659-66db-4fc9-af2b-bc291e6d3830.cfargotunnel.com"]
+    - dnsName: gw-ext-fsn1.stanleygrange.uk
+      recordType: CNAME
+      targets: ["5c9df659-66db-4fc9-af2b-bc291e6d3830.cfargotunnel.com"]
