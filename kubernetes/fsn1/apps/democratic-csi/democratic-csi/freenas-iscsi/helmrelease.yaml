@@ -27,7 +27,8 @@ spec:
   values:
     controller:
       driver:
-        logLevel: debug
+        image:
+          tag: next
     csiDriver:
       name: "org.democratic-csi.freenas-iscsi"
     storageClasses:
@@ -47,6 +48,8 @@ spec:
         node-publish-secret:
         controller-expand-secret:
     driver:
+      image:
+        tag: next
       config:
         driver: freenas-api-iscsi
         httpConnection:
@@ -89,6 +92,8 @@ spec:
     node:
       hostPID: true
       driver:
+        image:
+          tag: next
         extraEnv:
           - name: ISCSIADM_HOST_STRATEGY
             value: nsenter
