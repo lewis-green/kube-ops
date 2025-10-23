@@ -25,6 +25,9 @@ spec:
       valuesKey: ssh-private-key
       targetPath: driver.config.sshConnection.privateKey
   values:
+    controller:
+      driver:
+        logLevel: debug
     csiDriver:
       name: "org.democratic-csi.freenas-iscsi"
     storageClasses:
