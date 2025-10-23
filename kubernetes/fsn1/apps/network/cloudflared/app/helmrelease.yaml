@@ -15,7 +15,7 @@ spec:
         data:
           config.yaml: |-
             ingress:
-              - hostname: "*.stanleygrange.uk"
+              - hostname: "*-gw.stanleygrange.uk"
                 originRequest:
                   http2Origin: true
                   originServerName: gw-ext-fsn1.stanleygrange.uk
