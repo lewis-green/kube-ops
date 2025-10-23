@@ -46,7 +46,7 @@ spec:
             port: *port
     ingress:
       app:
-        className: nginx-external
+        className: external-nginx
         hosts:
           - host: echo-server-fsn1.stanleygrange.uk
             paths:
