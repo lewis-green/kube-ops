@@ -26,15 +26,16 @@ spec:
       targetPath: driver.config.sshConnection.privateKey
   values:
     csiDriver:
-      name: "org.democratic-csi.iscsi"
+      name: "org.democratic-csi.freenas-iscsi"
     storageClasses:
-    - name: truenas-iscsi-nonroot
-      defaultClass: false
+    - name: truenas-iscsi
+      defaultClass: true
       reclaimPolicy: Delete
       volumeBindingMode: Immediate
       allowVolumeExpansion: true
       parameters:
         fsType: ext4
+        detachedVolumesFromSnapshots: "false"
       mountOptions: []
       secrets:
         provisioner-secret:
@@ -44,20 +45,14 @@ spec:
         controller-expand-secret:
     driver:
       config:
-        driver: freenas-iscsi
-        instance_id:
+        driver: freenas-api-iscsi
         httpConnection:
           protocol: https
           host: 172.16.99.10
-          port: 443
-          
+          port: 443  
           username: truenas_admin
           allowInsecure: true
           apiVersion: 2
-        sshConnection:
-          host: 172.16.99.10
-          port: 22
-          username: admin
         zfs:
           cli:
             sudoEnabled: true
@@ -66,8 +61,8 @@ spec:
               zpool: /usr/sbin/zpool
               sudo: /usr/bin/sudo
               chroot: /usr/sbin/chroot
-          datasetParentName: pool0/csi/vols
-          detachedSnapshotsDatasetParentName: pool0/csi/snaps
+          datasetParentName: kubernetes/iscsi/volumes
+          detachedSnapshotsDatasetParentName: kubernetes/iscsi/snapshots
           zvolCompression: 
           zvolDedup:
           zvolEnableReservation: false
@@ -77,7 +72,7 @@ spec:
           targetPortals: []
           interface:
           namePrefix: fsn1-
-          nameSuffix: ""
+          nameSuffix: "-talos"
           targetGroups:
             - targetGroupPortalGroup: 1
               targetGroupInitiatorGroup: 1
@@ -88,3 +83,13 @@ spec:
           extentBlocksize: 4096
           extentRpm: "SSD"
           extentAvailThreshold: 0
+    node:
+      hostPID: true
+      driver:
+        extraEnv:
+          - name: ISCSIADM_HOST_STRATEGY
+            value: nsenter
+          - name: ISCSIADM_HOST_PATH
+            value: /usr/local/sbin/iscsiadm
+        iscsiDirHostPath: /usr/local/etc/iscsi
+        iscsiDirHostPathType: ""
