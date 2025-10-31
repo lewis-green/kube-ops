@@ -5,6 +5,7 @@ kind: Kustomization
 resources:
   - authentik.yaml
   - cilium.yaml
+  - cnpg.yaml
   - controlplaneio.yaml
   - coredns.yaml
   - democratic-csi.yaml

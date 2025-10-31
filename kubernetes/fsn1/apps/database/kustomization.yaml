@@ -5,4 +5,5 @@ kind: Kustomization
 namespace: hosted
 components:
   - ../../components/namespace
-resources: []
+resources:
+  - ./cloudnativepg/ks.yaml
