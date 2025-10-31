@@ -8,6 +8,23 @@ spec:
     kind: OCIRepository
     name: keycloak
   interval: 30m
+  valuesFrom:
+    - kind: Secret
+      name: keycloak-credentials
+      valuesKey: username
+      targetPath: keycloak.adminUser
+    - kind: Secret
+      name: keycloak-credentials
+      valuesKey: password
+      targetPath: keycloak.adminPassword
+    - kind: Secret
+      name: keycloak-database-credentials
+      valuesKey: username
+      targetPath: database.username
+    - kind: Secret
+      name: keycloak-database-credentials
+      valuesKey: password
+      targetPath: database.password
   values:
     image:
       registry: docker.io
@@ -19,68 +36,25 @@ spec:
     replicaCount: 3
 
     keycloak:
-      adminUser: admin
-      adminPassword: ""
-      ## @param keycloak.existingSecret Name of existing secret to use for Keycloak admin credentials
-      existingSecret: ""
-      ## @param keycloak.secretKeys Secret keys for admin credentials
-      secretKeys:
-        adminPasswordKey: "admin-password"
-      hostname: ""
-      hostnameAdmin: ""
-      hostnameStrict: false
-      hostnameBackchannel: ""
+      hostname: id.stanleygrange.uk
+      hostnameAdmin: id.stanleygrange.uk
+      hostnameStrict: true
+      hostnameBackchannel: id.stanleygrange.uk
       httpEnabled: true
       httpPort: 8080
       httpsPort: 8443
       proxyHeaders: ""
-      proxyProtocolEnabled: false
+      proxyProtocolEnabled: true
       proxyTrustedAddresses: ""
-      production: false
+      production: true
       httpRelativePath: /
       extraArgs: []
 
-    ## @section TLS Configuration
-    tls:
-      enabled: false
-      existingSecret: ""
-      certificateFile: "/opt/keycloak/certs/tls.crt"
-      certificateKeyFile: "/opt/keycloak/certs/tls.key"
-      certManager:
-        enabled: false
-        issuerRef:
-          name: ""
-          kind: ClusterIssuer
-          group: cert-manager.io
-        duration: ""
-        renewBefore: ""
-        commonName: ""
-        dnsNames: []
-        ipAddresses: []
-        secretName: ""
-        usages:
-          - digital signature
-          - key encipherment
-        annotations: {}
-      truststoreEnabled: false
-      truststoreExistingSecret: ""
-      truststorePassword: ""
-      truststoreFile: "/opt/keycloak/truststore/truststore.jks"
-
     database:
       type: postgres
-      host: ""
-      port: ""
-      schema: ""
-      urlProperties: ""
+      host: keycloak-rw.hosted.svc.cluster.local
+      port: 5432
       name: keycloak
-      username: keycloak
-      password: ""
-      existingSecret: ""
-      secretKeys:
-        passwordKey: "db-password"
-        usernameKey: "db-username"
-      jdbcParams: ""
 
     cache:
       stack: local
@@ -102,8 +76,7 @@ spec:
       enabled: true
       className: external-nginx
       annotations: {}
-        # kubernetes.io/ingress.class: nginx
-        # kubernetes.io/tls-acme: "true"
+        
         # nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
       hosts:
         - host: id.stanleygrange.uk

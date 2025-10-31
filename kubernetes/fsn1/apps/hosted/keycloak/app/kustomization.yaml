@@ -7,3 +7,4 @@ resources:
   - ./database-cluster.yaml
   - ./database-db.yaml
   - ./ocirepository.yaml
+  - ./helmrelease.yaml
