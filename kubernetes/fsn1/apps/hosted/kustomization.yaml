@@ -6,4 +6,4 @@ namespace: hosted
 components:
   - ../../components/namespace
 resources:
-  - ./authentik/ks.yaml
+  # - ./authentik/ks.yaml
