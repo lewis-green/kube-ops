@@ -53,7 +53,6 @@ spec:
     database:
       type: postgres
       host: keycloak-rw.hosted.svc.cluster.local
-      port: 5432
       name: keycloak
 
     cache:
