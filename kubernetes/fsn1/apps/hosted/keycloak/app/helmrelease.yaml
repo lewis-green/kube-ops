@@ -39,7 +39,6 @@ spec:
       hostname: id.stanleygrange.uk
       hostnameAdmin: id.stanleygrange.uk
       hostnameStrict: true
-      hostnameBackchannel: id.stanleygrange.uk
       httpEnabled: true
       httpPort: 8080
       httpsPort: 8443
