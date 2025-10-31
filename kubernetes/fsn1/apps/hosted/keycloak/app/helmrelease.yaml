@@ -1,0 +1,124 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: keycloak
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: keycloak
+  interval: 30m
+  values:
+    image:
+      registry: docker.io
+      repository: keycloak/keycloak
+      tag: "26.4.2@sha256:3617b09bb4b7510a8d8d9b9fc5707399e2d70688dbcc2f8fb013a144829be1b9"
+      imagePullPolicy: IfNotPresent
+      command: "/opt/keycloak/bin/kc.sh"
+
+    replicaCount: 3
+
+    keycloak:
+      adminUser: admin
+      adminPassword: ""
+      ## @param keycloak.existingSecret Name of existing secret to use for Keycloak admin credentials
+      existingSecret: ""
+      ## @param keycloak.secretKeys Secret keys for admin credentials
+      secretKeys:
+        adminPasswordKey: "admin-password"
+      hostname: ""
+      hostnameAdmin: ""
+      hostnameStrict: false
+      hostnameBackchannel: ""
+      httpEnabled: true
+      httpPort: 8080
+      httpsPort: 8443
+      proxyHeaders: ""
+      proxyProtocolEnabled: false
+      proxyTrustedAddresses: ""
+      production: false
+      httpRelativePath: /
+      extraArgs: []
+
+    ## @section TLS Configuration
+    tls:
+      enabled: false
+      existingSecret: ""
+      certificateFile: "/opt/keycloak/certs/tls.crt"
+      certificateKeyFile: "/opt/keycloak/certs/tls.key"
+      certManager:
+        enabled: false
+        issuerRef:
+          name: ""
+          kind: ClusterIssuer
+          group: cert-manager.io
+        duration: ""
+        renewBefore: ""
+        commonName: ""
+        dnsNames: []
+        ipAddresses: []
+        secretName: ""
+        usages:
+          - digital signature
+          - key encipherment
+        annotations: {}
+      truststoreEnabled: false
+      truststoreExistingSecret: ""
+      truststorePassword: ""
+      truststoreFile: "/opt/keycloak/truststore/truststore.jks"
+
+    database:
+      type: postgres
+      host: ""
+      port: ""
+      schema: ""
+      urlProperties: ""
+      name: keycloak
+      username: keycloak
+      password: ""
+      existingSecret: ""
+      secretKeys:
+        passwordKey: "db-password"
+        usernameKey: "db-username"
+      jdbcParams: ""
+
+    cache:
+      stack: local
+      configFile: ""
+
+    realm:
+      import: false
+
+    service:
+      type: ClusterIP
+      httpPort: 8080
+      httpsPort: 8443
+      httpTargetPort: 8080
+      httpsTargetPort: 8443
+      annotations: {}
+      trafficDistribution: ""
+
+    ingress:
+      enabled: true
+      className: external-nginx
+      annotations: {}
+        # kubernetes.io/ingress.class: nginx
+        # kubernetes.io/tls-acme: "true"
+        # nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+      hosts:
+        - host: id.stanleygrange.uk
+          paths:
+            - path: /
+              pathType: Prefix
+      tls: []
+
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+
+    postgres:
+      enabled: false
