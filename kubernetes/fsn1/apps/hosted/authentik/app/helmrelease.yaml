@@ -36,6 +36,7 @@ spec:
     server:
       ingress:
         enabled: true
+        ingressClassName: external-nginx
         hosts:
           - id.stanleygrange.uk
 
