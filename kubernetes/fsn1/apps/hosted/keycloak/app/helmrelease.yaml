@@ -43,7 +43,7 @@ spec:
       httpPort: 8080
       httpsPort: 8443
       proxyHeaders: "xforwarded"
-      proxyProtocolEnabled: true
+      proxyProtocolEnabled: false
       proxyTrustedAddresses: ""
       production: true
       httpRelativePath: /
