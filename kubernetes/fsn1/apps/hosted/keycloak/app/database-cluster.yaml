@@ -7,3 +7,11 @@ spec:
   storage:
     size: 1Gi
     storageClass: freenas-iscsi
+  managed:
+    roles:
+      - name: keycloak
+        ensure: present
+        login: true
+        superuser: false
+        passwordSecret:
+          name: keycloak-database-credentials
