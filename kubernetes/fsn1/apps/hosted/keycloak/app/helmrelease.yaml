@@ -37,7 +37,6 @@ spec:
 
     keycloak:
       hostname: id.stanleygrange.uk
-      hostnameAdmin: id.stanleygrange.uk
       hostnameStrict: true
       httpEnabled: true
       httpPort: 8080
