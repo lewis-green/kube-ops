@@ -6,4 +6,5 @@ namespace: hosted
 components:
   - ../../components/namespace
 resources:
-  - ./keycloak/ks.yaml
+  - ./authentik/ks.yaml
+  # - ./keycloak/ks.yaml

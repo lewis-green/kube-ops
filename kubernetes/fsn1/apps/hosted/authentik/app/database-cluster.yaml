@@ -1,0 +1,17 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: authentik
+spec:
+  instances: 3
+  storage:
+    size: 1Gi
+    storageClass: freenas-iscsi
+  managed:
+    roles:
+      - name: authentik
+        ensure: present
+        login: true
+        superuser: false
+        passwordSecret:
+          name: authentik-database-credentials
