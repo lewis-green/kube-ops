@@ -6,4 +6,4 @@ resources:
   - ./externalsecret.yaml
   - ./database-cluster.yaml
   - ./database-db.yaml
-  # - ./helmrelease.yaml
+  - ./helmrelease.yaml

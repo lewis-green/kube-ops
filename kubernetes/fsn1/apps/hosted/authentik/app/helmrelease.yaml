@@ -27,11 +27,15 @@ spec:
     - kind: Secret
       name: authentik-secrets
       valuesKey: psql_password
-      targetPath: postgresql.auth.password
+      targetPath: authentik.postgresql.password
   values:
     authentik:
       error_reporting:
         enabled: true
+      postgresql:
+        host: authentik-rw.hosted.svc.cluster.local
+        name: authentik
+        user: authentik
 
     server:
       ingress:
@@ -41,11 +45,7 @@ spec:
           - id.stanleygrange.uk
 
     postgresql:
-      enabled: true
-      global:
-        defaultStorageClass: freenas-iscsi
-      primary:
-        persistence:
-          enabled: true
+      enabled: false
+
     redis:
       enabled: true
