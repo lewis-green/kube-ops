@@ -2,6 +2,8 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Database
 metadata:
   name: authentik
+  labels:
+    cnpg.io/cluster: authentik
 spec:
   name: authentik
   owner: authentik
