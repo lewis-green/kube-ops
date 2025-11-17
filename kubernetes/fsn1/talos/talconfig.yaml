@@ -4,7 +4,7 @@ clusterName: &clusterName ${K8S_CLUSTER_NAME}
 endpoint: "https://${K8S_ENDPOINT_DNS}:6443"
 
 # renovate: depName=ghcr.io/siderolabs/installer datasource=docker
-talosVersion: v1.11.5
+talosVersion: v1.11.3
 # renovate: depName=ghcr.io/siderolabs/kubelet datasource=docker
 kubernetesVersion: v1.34.2
 
@@ -140,7 +140,26 @@ controlPlane:
 
   machineFiles:
     - op: create
-      path: /etc/talos/scheduler-config.yaml
+      path: /var/etc/kubeapiserver-authn-config.yaml
+      permissions: 0o666
+      content: |
+        apiVersion: apiserver.config.k8s.io/v1
+        kind: AuthenticationConfiguration
+        jwt:
+        - issuer:
+            url: ${DEX_IDP_ISSUER}
+            audiences:
+            - kubectl
+          claimMappings:
+            username:
+              claim: email
+              prefix: ""
+            groups:
+              claim: groups
+              prefix: ""
+          userValidationRules:
+          - expression: "!user.username.startsWith('system:')"
+            message: "username cannot use reserved system: prefix"
 
   schematic:
     customization:
@@ -208,3 +227,14 @@ controlPlane:
               - os:admin
             allowedKubernetesNamespaces:
               - system-upgrade
+
+    # Enable oidc login to cluster
+    - |-
+      cluster:
+        apiServer:
+          extraArgs:
+            authentication-config: /etc/talos/authn-config.yaml
+          extraVolumes:
+            - hostPath: /var/etc/kubeapiserver-authn-config.yaml
+              mountPath: /etc/talos/authn-config.yaml
+              readonly: true
