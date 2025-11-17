@@ -52,4 +52,9 @@ spec:
           name: 'Kubernetes CLI'
           redirectURIs:
             - http://localhost:8000
-            - http://localhost:18000            
+            - http://localhost:18000
+        - id: oidcdebugger
+          public: true
+          name: 'Kubernetes CLI'
+          redirectURIs:
+            - https://oidcdebugger.com/debug
