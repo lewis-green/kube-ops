@@ -4,9 +4,9 @@ clusterName: &clusterName ${K8S_CLUSTER_NAME}
 endpoint: "https://${K8S_ENDPOINT_DNS}:6443"
 
 # renovate: depName=ghcr.io/siderolabs/installer datasource=docker
-talosVersion: v1.11.3
+talosVersion: v1.11.5
 # renovate: depName=ghcr.io/siderolabs/kubelet datasource=docker
-kubernetesVersion: v1.34.1
+kubernetesVersion: v1.34.2
 
 cniConfig:
   name: none
@@ -17,7 +17,7 @@ additionalApiServerCertSans: &san
   - "127.0.0.1" # KubePrism
 
 additionalMachineCertSans: *san
-
+ 
 nodes:
   - hostname: k8s-1.fsn1.stanleygrange.uk
     ipAddress: 172.16.99.11
@@ -104,6 +104,7 @@ patches:
       kubelet:
         extraArgs:
           rotate-server-certificates: "true"
+          feature-gates: StructuredAuthenticationConfiguration=true
         extraConfig:
           maxPods: 150
         nodeIP:
@@ -136,6 +137,10 @@ controlPlane:
   nodeLabels:
     topology.kubernetes.io/region: *clusterName
     topology.kubernetes.io/zone: fsn1
+
+  machineFiles:
+    - op: create
+      path: /etc/talos/scheduler-config.yaml
 
   schematic:
     customization:

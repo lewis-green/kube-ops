@@ -21,7 +21,7 @@ spec:
       cloud.stanleygrange.uk/app: dex
     ingress:
       enabled: true
-      ingressClassName: external-nginx
+      className: external-nginx
       hosts:
         - host: dex-k8s-fsn1.stanleygrange.uk
           paths:
