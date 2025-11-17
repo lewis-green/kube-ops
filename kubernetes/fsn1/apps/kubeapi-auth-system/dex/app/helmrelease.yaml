@@ -26,6 +26,7 @@ spec:
         - host: dex-k8s-fsn1.stanleygrange.uk
           paths:
             - path: /
+              pathType: Prefix
     envFrom:
       - secretRef:
           name: dex-environment
