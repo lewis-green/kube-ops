@@ -46,3 +46,10 @@ spec:
             redirectURI: https://dex-k8s-fsn1.stanleygrange.uk/callback
             orgs:
               - name: stanley-grange
+      staticClients:
+        - id: kubectl
+          public: true
+          name: 'Kubernetes CLI'
+          redirectURIs:
+            - http://localhost:8000
+            - http://localhost:18000            
