@@ -60,3 +60,5 @@ spec:
             - 'https://ziti.stanleygrange.uk:8441/auth/callback'
           name: 'OpenZiti DEX Integration'
           public: true
+      web:
+        allowedOrigins: ['*']
