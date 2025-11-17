@@ -46,6 +46,8 @@ spec:
             redirectURI: https://dex-k8s-fsn1.stanleygrange.uk/callback
             orgs:
               - name: stanley-grange
+      oauth2:
+        skipApprovalScreen: true
       staticClients:
         - id: kubectl
           public: true
