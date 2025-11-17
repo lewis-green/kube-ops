@@ -60,3 +60,4 @@ spec:
           name: 'Kubernetes CLI'
           redirectURIs:
             - https://oidcdebugger.com/debug
+            - https://oauth.pstmn.io/v1/callback
