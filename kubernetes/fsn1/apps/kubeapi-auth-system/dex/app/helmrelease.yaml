@@ -58,7 +58,7 @@ spec:
         - id: openziti
           redirectURIs:
             - https://ztna.stanleygrange.uk:8441/zac/callback
-          name: 'OpenZiti DEX Integration'
+          name: 'OpenZiti'
           public: true
       web:
         allowedOrigins: ['*']
