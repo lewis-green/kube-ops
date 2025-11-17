@@ -37,4 +37,4 @@ spec:
             clientSecret: $GITHUB_CLIENT_SECRET
             redirectURI: https://dex-k8s-fsn1.stanleygrange.uk/callback
             orgs:
-              - stanley-grange
+              - name: stanley-grange
