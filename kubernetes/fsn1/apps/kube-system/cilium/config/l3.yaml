@@ -7,6 +7,14 @@ metadata:
     advertise: bgp
 spec:
   advertisements:
+    - advertisement: PodCIDR
+    - advertisementType: Service
+      service:
+        addresses:
+          - ClusterIP
+      selector:
+        matchLabels:
+          io.cilium/bgp-announce: "true"
     - advertisementType: Service
       service:
         addresses:
@@ -23,6 +31,12 @@ kind: CiliumBGPPeerConfig
 metadata:
   name: l3-bgp-peer-config
 spec:
+  timers:
+    holdTimeSeconds: 90
+    keepAliveTimeSeconds: 30
+  gracefulRestart:
+    enabled: true
+    restartTimeSeconds: 120
   families:
     - afi: ipv4
       safi: unicast
