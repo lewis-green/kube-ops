@@ -10,7 +10,8 @@ spec:
     labels:
       app.kubernetes.io/name: *appname
   dependsOn:
-    - name: external-secrets
+    - name: stores
+      namespace: external-secrets
   interval: 1h
   path: ./kubernetes/fsn1/apps/hosted/gitea/app
   prune: true
