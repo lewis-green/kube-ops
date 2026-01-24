@@ -1,0 +1,110 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/main/helmrelease-helm-v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: gitea
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: gitea
+      version: 12.5.0
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: gitea
+  values:    
+    replicaCount: 1
+    
+    ## @param podDisruptionBudget Pod disruption budget
+    podDisruptionBudget: {}
+    #  maxUnavailable: 1
+    #  minAvailable: 1
+
+    ## @section Service
+    service:
+      http:
+        type: ClusterIP
+        port: 3000
+        clusterIP: None
+      ssh:
+        type: ClusterIP
+        port: 22
+        clusterIP: None
+        loadBalancerIP:
+        nodePort:
+        externalTrafficPolicy:
+        externalIPs:
+        ipFamilyPolicy:
+        ipFamilies:
+        hostPort:
+        loadBalancerSourceRanges: []
+        annotations: {}
+        labels: {}
+        loadBalancerClass:
+
+    ingress:
+      enabled: true
+      className: external-nginx
+      pathType: Prefix
+      annotations: {}
+      hosts:
+        - host: git.stanleygrange.uk
+          paths:
+            - path: /
+      tls: []
+
+    persistence:
+      enabled: true
+      create: true
+      mount: true
+      claimName: gitea-shared-storage
+      size: 20Gi
+      accessModes:
+        - ReadWriteOnce
+      storageClass: freenas-iscsi
+
+    gitea:
+      admin:
+        existingSecret: gitea-admin-password
+        username: gitea_admin
+        email: "gitea@stanleygrange.uk"
+        passwordMode: keepUpdated
+
+      # Either specify inline `key` and `secret` or refer to them via `existingSecret`
+      ## @param gitea.oauth OAuth configuration
+      oauth:
+        []
+        # - name: 'OAuth 1'
+        #   provider:
+        #   key:
+        #   secret:
+        #   existingSecret:
+        #   autoDiscoverUrl:
+        #   useCustomUrls:
+        #   customAuthUrl:
+        #   customTokenUrl:
+        #   customProfileUrl:
+        #   customEmailUrl:
+
+      config:
+        APP_NAME: "Stanley Grange Git"
+        database:
+          DB_TYPE: postgres
+          HOST: 127.0.0.1:3306
+          NAME: gitea
+          USER: root
+          PASSWD: gitea
+          SCHEMA: gitea
+        server:
+          SSH_PORT: 22 # rootful image
+          SSH_LISTEN_PORT: 2222 # rootless image
+    valkey-cluster:
+      persistence:
+        storageClass: freenas-iscsi
+
+    ## @section PostgreSQL HA
+    postgresql-ha:
+      ## @param postgresql-ha.enabled Enable PostgreSQL HA
+      enabled: false

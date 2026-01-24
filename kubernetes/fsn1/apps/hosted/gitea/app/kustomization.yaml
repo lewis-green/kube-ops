@@ -3,7 +3,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: hosted
-components:
-  - ../../components/namespace
 resources:
-  - ./gitea/ks.yaml
+  - ./externalsecret.yaml
+  - ./helmrepository.yaml
+  - ./database-cluster.yaml
+  - ./database-db.yaml
