@@ -5,6 +5,4 @@ kind: Kustomization
 namespace: hosted
 components:
   - ../../components/namespace
-resources:
-  - ./authentik/ks.yaml
-  # - ./keycloak/ks.yaml
+resources: []
