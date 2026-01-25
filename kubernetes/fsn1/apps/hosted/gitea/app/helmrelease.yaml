@@ -107,6 +107,7 @@ spec:
           PUBLIC_URL_DETECTION: "auto"
           SSH_PORT: 22 # rootful image
           SSH_LISTEN_PORT: 2222 # rootless image
+          SSH_DOMAIN: "ssh-git.stanleygrange.uk"
         service:
           DISABLE_REGISTRATION: "true"
           REQUIRE_SIGNIN_VIEW: "true"
