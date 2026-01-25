@@ -7,6 +7,12 @@ spec:
   storage:
     size: 8Gi
     storageClass: freenas-iscsi
+  bootstrap:
+    initdb:
+      database: gitea
+      owner: gitea
+      secret:
+        name: gitea-database-credentials
   managed:
     roles:
       - name: gitea

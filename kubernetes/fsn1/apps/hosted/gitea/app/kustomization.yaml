@@ -7,4 +7,3 @@ resources:
   - ./externalsecret.yaml
   - ./helmrepository.yaml
   - ./database-cluster.yaml
-  - ./database-db.yaml

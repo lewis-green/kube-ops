@@ -92,11 +92,10 @@ spec:
         APP_NAME: "Stanley Grange Git"
         database:
           DB_TYPE: postgres
-          HOST: 127.0.0.1:3306
+          HOST: gitea-rw.hosted.svc.cluster.local
           NAME: gitea
-          USER: root
-          PASSWD: gitea
-          SCHEMA: gitea
+          USER: gitea
+          SCHEMA: public
         server:
           SSH_PORT: 22 # rootful image
           SSH_LISTEN_PORT: 2222 # rootless image
