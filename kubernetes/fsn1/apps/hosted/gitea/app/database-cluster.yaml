@@ -13,11 +13,3 @@ spec:
       owner: gitea
       secret:
         name: gitea-database-credentials
-  managed:
-    roles:
-      - name: gitea
-        ensure: present
-        login: true
-        superuser: false
-        passwordSecret:
-          name: gitea-database-credentials
