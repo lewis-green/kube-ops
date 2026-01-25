@@ -17,6 +17,7 @@ spec:
   valuesFrom:
     - kind: Secret
       name: gitea-database-credentials
+      valuesKey: password
       targetPath: gitea.config.database.PASSWORD
   values:    
     replicaCount: 1
