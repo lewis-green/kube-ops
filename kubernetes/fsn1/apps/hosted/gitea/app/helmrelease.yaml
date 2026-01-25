@@ -99,14 +99,25 @@ spec:
 
       config:
         APP_NAME: "Stanley Grange Git"
+        admin:
+          DISABLE_REGULAR_ORG_CREATION: "true"
         database:
           DB_TYPE: postgres
           HOST: gitea-rw.hosted.svc.cluster.local
           NAME: gitea
           SCHEMA: public
+        repository:
+          DEFAULT_PRIVATE: private
+          DEFAULT_BRANCH: main
+        security:
+          INSTALL_LOCK: "true"
         server:
           SSH_PORT: 22 # rootful image
           SSH_LISTEN_PORT: 2222 # rootless image
+        service:
+          DISABLE_REGISTRATION: "true"
+          REQUIRE_SIGNIN_VIEW: "true"
+          
     valkey-cluster:
       persistence:
         storageClass: freenas-iscsi
