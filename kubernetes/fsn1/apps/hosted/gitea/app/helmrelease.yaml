@@ -112,6 +112,8 @@ spec:
         security:
           INSTALL_LOCK: "true"
         server:
+          ROOT_URL: "https://git.stanleygrange.uk/"
+          PUBLIC_URL_DETECTION: "auto"
           SSH_PORT: 22 # rootful image
           SSH_LISTEN_PORT: 2222 # rootless image
         service:
