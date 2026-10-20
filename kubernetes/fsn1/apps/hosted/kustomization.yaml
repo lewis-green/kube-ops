@@ -7,3 +7,4 @@ components:
   - ../../components/namespace
 resources:
   - ./gitea/ks.yaml
+  - ./cf-bot-demo/ks.yaml
