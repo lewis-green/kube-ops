@@ -19,6 +19,12 @@ spec:
             image:
               repository: ghcr.io/lewis-green/cf-bot-demo
               tag: 9a4f2ae
+            env:
+              # HTTP stays on 8080 for the probes; HTTPS uses the Cloudflare Origin CA cert.
+              Kestrel__Endpoints__Http__Url: http://+:8080
+              Kestrel__Endpoints__Https__Url: https://+:8443
+              Kestrel__Endpoints__Https__Certificate__Path: /certs/tls.crt
+              Kestrel__Endpoints__Https__Certificate__KeyPath: /certs/tls.key
             envFrom:
               - secretRef:
                   name: cf-bot-demo-secret
@@ -35,7 +41,18 @@ spec:
           lbipam.cilium.io/ips: 172.16.100.7
         ports:
           http:
+            primary: true
             port: &port 8080
+          https:
+            port: 443
+            targetPort: 8443
+    persistence:
+      certs:
+        type: secret
+        name: cf-bot-demo-tls
+        globalMounts:
+          - path: /certs
+            readOnly: true
     ingress:
       app:
         className: external-nginx
