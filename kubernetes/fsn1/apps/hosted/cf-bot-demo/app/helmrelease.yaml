@@ -29,6 +29,10 @@ spec:
                 enabled: true
     service:
       app:
+        type: LoadBalancer
+        externalTrafficPolicy: Local
+        annotations:
+          lbipam.cilium.io/ips: 172.16.100.7
         ports:
           http:
             port: &port 8080
