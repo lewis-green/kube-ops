@@ -10,6 +10,9 @@ spec:
   commonMetadata:
     labels:
       app.kubernetes.io/name: *appname
+  dependsOn:
+    - name: stores
+      namespace: external-secrets
   interval: 30m
   timeout: 5m
   path: "./kubernetes/fsn1/apps/hosted/cf-bot-demo/app"

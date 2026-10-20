@@ -12,11 +12,16 @@ spec:
   values:
     controllers:
       cf-bot-demo:
+        annotations:
+          reloader.stakater.com/auto: "true"
         containers:
           app:
             image:
               repository: ghcr.io/lewis-green/cf-bot-demo
               tag: 9a4f2ae
+            envFrom:
+              - secretRef:
+                  name: cf-bot-demo-secret
             probes:
               liveness:
                 enabled: true
